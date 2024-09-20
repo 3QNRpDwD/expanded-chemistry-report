@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>극성 물질과 나노 스케일 얼음의 물리적 특성</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <div id="slideContainer" class="bg-white shadow-2xl rounded-lg overflow-hidden max-w-4xl mx-auto">
+            <!-- 슬라이드 1: 제목 -->
+            <div class="slide active">
+                <div class="p-16 text-center bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <h1 class="text-4xl font-bold mb-4 text-indigo-800">극성 물질과 나노 스케일 얼음의 물리적 특성</h1>
+                    <p class="text-xl text-gray-600">상세 보고서 프레젠테이션</p>
+                </div>
+            </div>
+
+            <!-- 슬라이드 2: 목차 -->
+            <div class="slide">
+                <div class="p-16">
+                    <h2 class="text-3xl font-bold mb-8 text-indigo-700 border-b-2 border-indigo-200 pb-2">목차</h2>
+                    <ul class="space-y-4 text-lg">
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">1</span>
+                            서론
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">2</span>
+                            극성 물질의 특성
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">3</span>
+                            자성과 극성의 비교
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">4</span>
+                            나노 스케일 얼음의 행동
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">5</span>
+                            양자 효과의 고려
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">6</span>
+                            실험적 접근 방법 및 과제
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4 text-indigo-600 font-semibold">7</span>
+                            결론 및 향후 연구 방향
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 슬라이드 3: 서론 -->
+            <div class="slide">
+                <div class="p-16">
+                    <h2 class="text-3xl font-bold mb-8 text-indigo-700 border-b-2 border-indigo-200 pb-2">1. 서론</h2>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>극성 물질의 특성 탐구</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>자성과의 비교 분석</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>나노 스케일에서의 얼음 행동 연구</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>전기장 하에서의 나노 얼음 행동 분석</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>양자 효과에 대한 논의</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 text-indigo-500 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            <span>실제적 응용 가능성 탐색</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 네비게이션 버튼 -->
+            <div class="flex justify-between p-4 bg-gray-50 border-t border-gray-200">
+                <button id="prevSlide" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                    이전
+                </button>
+                <button id="nextSlide" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50">
+                    다음
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+
+        document.getElementById('prevSlide').addEventListener('click', () => showSlide(currentSlide - 1));
+        document.getElementById('nextSlide').addEventListener('click', () => showSlide(currentSlide + 1));
+    </script>
+</body>
+</html>
