@@ -10,7 +10,7 @@ class WaterMolecule:
         # 산소(O) 원자 (빨간색)
         self.oxygen = sphere(pos=position, radius=0.3, color=color.red)
         
-        # 수소(H) 원자 (흰색)
+        # 수소(H) 원자 (파란색)
         self.hydrogen1 = sphere(pos=position + vector(0.4, 0.2, 0), radius=0.2, color=color.blue)
         self.hydrogen2 = sphere(pos=position + vector(-0.4, 0.2, 0), radius=0.2, color=color.blue)
         
