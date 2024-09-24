@@ -1,7 +1,7 @@
 import numpy as np
-from vpython import sphere, vector, rate, color, cylinder, arrow, curve, mag, cos, sin, rotate, cross
+from vpython import sphere, vector, rate, color, cylinder, arrow, curve, mag, cos, sin, rotate, cross, scene
 
-pos = 0.2 # 자기장 강도 전역변수
+pos = 0.2 # 자기장 강도 전역변수 0.00001 = 0.01 밀리 테슬라의 20000 배
 
 # 물 분자를 나타내는 클래스
 class WaterMolecule:
@@ -30,6 +30,7 @@ class WaterMolecule:
     # def attract_to_field(self, field_direction, strength=pos):
     #     """ 물 분자를 자기장 방향으로 이동"""
     #     self.move(strength * field_direction)
+    
     def align_to_field(self, field_direction, strength=0.1):
         field = (field_direction).norm()
         rotation_axis = cross(self.dipole, field)
@@ -56,51 +57,52 @@ def calculate_magnetic_field(m_pos):
 #     return B_n + B_s
 
 # 곡선 자기장 선 생성
-def create_field_lines(north_pos, south_pos, num_lines=20, num_points=100, max_length=100):
-    """자기장선 생성"""
-    lines = []
+# def create_field_lines(north_pos, south_pos, num_lines=20, num_points=100, max_length=100):
+#     """자기장선 생성"""
+#     lines = []
     
-    # 시작점 설정 (N극 주변에 원형으로 배치)
-    from math import cos, sin, pi
-    start_radius = 1  # 시작 반경
-    for i in range(num_lines):
-        angle = 2 * pi * i / num_lines
-        start = north_pos + vector(start_radius*cos(angle), start_radius*sin(angle), 0)
-        line = [start]
+#     # 시작점 설정 (N극 주변에 원형으로 배치)
+#     from math import cos, sin, pi
+#     start_radius = 1  # 시작 반경
+#     for i in range(num_lines):
+#         angle = 2 * pi * i / num_lines
+#         start = north_pos + vector(start_radius*cos(angle), start_radius*sin(angle), 0)
+#         line = [start]
         
-        for _ in range(num_points):
-            m_pos = line[-1]
-            if mag(m_pos - south_pos) < 0.1:  # S극에 도달하면 중단
-                break
-            B = calculate_magnetic_field(m_pos)
-            next_pos = m_pos + B.norm() * 0.1  # 자기장 방향으로 이동 (크기 정규화)
-            line.append(next_pos)
+#         for _ in range(num_points):
+#             m_pos = line[-1]
+#             if mag(m_pos - south_pos) < 0.1:  # S극에 도달하면 중단
+#                 break
+#             B = calculate_magnetic_field(m_pos)
+#             next_pos = m_pos + B.norm() * 0.1  # 자기장 방향으로 이동 (크기 정규화)
+#             line.append(next_pos)
             
-            if mag(next_pos - north_pos) > max_length:  # 최대 길이 제한
-                break
+#             if mag(next_pos - north_pos) > max_length:  # 최대 길이 제한
+#                 break
         
-        lines.append(line)
+#         lines.append(line)
     
-    return lines    
+#     return lines    
 
-def update_field_lines(curves, lines):
-    """자기장선 업데이트"""
-    for curve, line in zip(curves, lines):
-        curve.clear()
-        for point in line:
-            curve.append(pos=point)
+# def update_field_lines(curves, lines):
+#     """자기장선 업데이트"""
+#     for curve, line in zip(curves, lines):
+#         curve.clear()
+#         for point in line:
+#             curve.append(pos=point)
 
-# 자기장선 초기화 (시뮬레이션 시작 시 호출)
-def initialize_field_lines(north_pole, south_pole):
-    global field_lines, curves
-    field_lines = create_field_lines(north_pole.pos, south_pole.pos)
-    curves = [curve(pos=line, radius=0.02, color=color.cyan) for line in field_lines]
+# # 자기장선 초기화 (시뮬레이션 시작 시 호출)
+# def initialize_field_lines(north_pole, south_pole):
+#     global field_lines, curves
+#     field_lines = create_field_lines(north_pole.pos, south_pole.pos)
+#     curves = [curve(pos=line, radius=0.02, color=color.cyan) for line in field_lines]
 
 # 시뮬레이션 루프에서 호출
 # def update_magnetic_field(north_pole, south_pole):
 #     global field_lines, curves
 #     field_lines = create_field_lines(north_pole.pos, south_pole.pos)
 #     update_field_lines(curves, field_lines)
+
 def update_water_molecules(molecules, north_pole, south_pole):
     for molecule in molecules:
         field = calculate_magnetic_field(molecule.center, north_pole.pos, south_pole.pos)
@@ -115,6 +117,36 @@ def update_magnetic_field():
 def update(molecule, pos=0):
     molecule.move(vector(pos, -0.05, pos))
     molecule.attract_to_field(calculate_magnetic_field(molecule.oxygen.pos))
+
+drag = False
+pick = None
+
+def mouse_down():
+    global drag
+    if scene.mouse.pick == bar_magnet:
+        drag = True
+    else:
+        drag = False
+
+def mouse_move():
+    global drag, north_pole, south_pole, bar_magnet
+    if drag:
+        new_pos = scene.mouse.pos
+        displacement = new_pos - bar_magnet.pos
+        bar_magnet.pos += displacement
+        north_pole.pos += displacement
+        south_pole.pos += displacement
+        update_magnetic_field()
+
+def mouse_release():
+    global drag
+    drag = False
+    
+    
+# 마우스 이벤트 바인딩
+scene.bind('mousedown', mouse_down)
+scene.bind('mousemove', mouse_move)
+scene.bind('mouseup', mouse_release)
 
 # 곡선 형태의 자기장 선 생성
 num_lines = 12  # 그릴 자기장 선의 개수
@@ -136,11 +168,11 @@ north_pole = sphere(pos=north_pole_pos, radius=0.3, color=color.red)  # N극
 south_pole = sphere(pos=south_pole_pos, radius=0.3, color=color.blue)  # S극
 
 # 자기장선 초기화
-initialize_field_lines(north_pole, south_pole) 
+# initialize_field_lines(north_pole, south_pole) 
 
 # 시뮬레이션 실행
 while True:
-    rate(20) 
+    rate(60) 
     [ update(molecule ) for molecule  in water_molecules  ]
     [ update(molecule2) for molecule2 in water_molecules2 ]
     [ update(molecule3) for molecule3 in water_molecules3 ]
