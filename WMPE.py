@@ -1,9 +1,14 @@
 import numpy as np
-from vpython import sphere, vector, rate, color, cylinder, arrow, curve, mag, cos, sin, rotate, cross, scene
+from vpython import sphere, vector, rate, color, cylinder, arrow, curve, mag, cos, sin, rotate, cross, scene, canvas
 
-pos = 0.2 # 자기장 강도 전역변수 0.00001 = 0.01 밀리 테슬라의 20000 배
+#0.00001 = 0.01 밀리 테슬라
+pos = 0.1 # 전기장 강도 전역변수 0.2 = 밀리 테슬라의 20000 배
 
-# 물 분자를 나타내는 클래스
+scene = canvas(width=1520, height=675, center=vector(0,0,0), background=color.white)
+scene.autoscale = False  # 자동 크기 조정 비활성화
+scene.range = 15  # 시야 범위 설정
+
+# 물 클래스
 class WaterMolecule:
     def __init__(self, position):
         self.center = position
@@ -21,6 +26,8 @@ class WaterMolecule:
         self.oxygen.pos += direction
         self.hydrogen1.pos += direction
         self.hydrogen2.pos += direction
+        # self.hydrogen1.pos = self.center + rotate(self.hydrogen1.pos - self.center, angle=0)
+        # self.hydrogen2.pos = self.center + rotate(self.hydrogen2.pos - self.center, angle=0)
         
     def rotate(self, axis, angle):
         self.hydrogen1.pos = self.center + rotate(self.hydrogen1.pos - self.center, angle=angle, axis=axis)
@@ -28,92 +35,87 @@ class WaterMolecule:
         self.dipole = (self.oxygen.pos - (self.hydrogen1.pos + self.hydrogen2.pos) / 2).norm()
 
     # def attract_to_field(self, field_direction, strength=pos):
-    #     """ 물 분자를 자기장 방향으로 이동"""
     #     self.move(strength * field_direction)
     
-    def align_to_field(self, field_direction, strength=0.1):
+    def align_to_field(self, field_direction, strength=pos):
         field = (field_direction).norm()
         rotation_axis = cross(self.dipole, field)
         rotation_angle = strength * mag(rotation_axis)
+        # 수소 결합 강도에 따른 회전 저항 추가, 얼음이 무극성을 띄지만, 분자 하나에 계산을 적용하는 실수 때문에 무극성의 특징이 발현되지 않음
+        max_rotation = 0.05  # 최대 회전 허용 각도 (수소 결합에 의해 제한됨)
+        rotation_angle = min(rotation_angle, max_rotation)
         if mag(rotation_axis) > 0:
             self.rotate(rotation_axis.norm(), rotation_angle)
 
-    def attract_to_field(self, field_direction, strength=0.2):
+
+    def attract_to_field(self, field_direction, strength=pos):
         self.move(strength * field_direction)
         self.align_to_field(field_direction)
+        
+    def add_hydrogen(self, direction):
+        h_pos = self.center + direction * 0.1
+        hydrogen = sphere(pos=h_pos, radius=0.1, color=color.white)
+        self.hydrogens.append(hydrogen)
+        bond = cylinder(pos=self.center, axis=direction*0.1, radius=0.03, color=color.white)
+        self.bonds.append(bond)
+
+def create_hexagonal_ice_layer(molecule_distance):
+    molecules = []
+    z = 0
+    half_distance = molecule_distance * 0.5
+    vertical_scale = molecule_distance * np.sqrt(3) / 2
+    max_distance_squared = (1 * molecule_distance) ** 2
+    rotation_offset = np.pi + 0.62
+
+    for i in range(-5, 6):
+        for j in range(-5, 6):
+            x = (i + (j % 2) * half_distance)
+            y = j * vertical_scale
+            distance_squared = x**2 + y**2
+            if 0 < distance_squared <= max_distance_squared:
+                molecule = WaterMolecule(vector(x, -y, z))
+                angle = np.arctan2(-y, x) + rotation_offset
+                # 분자 회전 적용
+                molecule.rotate(vector(0, 0, 1), angle)
+                molecules.append(molecule)
+                
+    #수소 결합 생성
+    create_hydrogen_bonds(molecules, 1)
+
+    return molecules
+
+# 수소 결합 함수 추가 (수소 결합을 그릴 때 사용)
+def create_hydrogen_bonds(molecules, bond_distance):
+    bonds = []
+    for i, mol1 in enumerate(molecules):
+        for j, mol2 in enumerate(molecules):
+            if i != j and mag(mol1.center - mol2.center) <= bond_distance:
+                bond = cylinder(pos=mol1.center, axis=mol2.center - mol1.center, radius=0.05, color=color.white)
+                bonds.append(bond)
+    return bonds
+
+def maintain_hydrogen_bonds(molecules, bond_distance):
+    for mol1 in molecules:
+        for mol2 in molecules:
+            if mol1 != mol2 and mag(mol1.center - mol2.center) <= bond_distance:
+                displacement = (mol2.center - mol1.center).norm() * bond_distance
+                mol2.move(displacement - (mol2.center - mol1.center))
 
 def calculate_magnetic_field(m_pos):
-    """ 자석의 자기장 벡터 계산 """
+    """ 자석의 전기장 벡터 계산 """
     B_north = (m_pos - north_pole.pos).norm() / mag(m_pos - north_pole.pos)**2
     B_south = (m_pos - south_pole.pos).norm() / mag(m_pos - south_pole.pos)**2
-    return B_south - B_north # S극에서 나와서 N극으로 들어가는 자기장 방향
-
-# def calculate_magnetic_field(pos, north_pos, south_pos, strength=pos):
-#     """자석의 자기장 벡터 계산"""
-#     r_n = pos - north_pos
-#     r_s = pos - south_pos
-#     B_n = strength * r_n / np.linalg.norm(r_n)**3
-#     B_s = -strength * r_s / np.linalg.norm(r_s)**3
-#     return B_n + B_s
-
-# 곡선 자기장 선 생성
-# def create_field_lines(north_pos, south_pos, num_lines=20, num_points=100, max_length=100):
-#     """자기장선 생성"""
-#     lines = []
+    return B_south - B_north # S극에서 나와서 N극으로 들어가는 전기장 방향
     
-#     # 시작점 설정 (N극 주변에 원형으로 배치)
-#     from math import cos, sin, pi
-#     start_radius = 1  # 시작 반경
-#     for i in range(num_lines):
-#         angle = 2 * pi * i / num_lines
-#         start = north_pos + vector(start_radius*cos(angle), start_radius*sin(angle), 0)
-#         line = [start]
-        
-#         for _ in range(num_points):
-#             m_pos = line[-1]
-#             if mag(m_pos - south_pos) < 0.1:  # S극에 도달하면 중단
-#                 break
-#             B = calculate_magnetic_field(m_pos)
-#             next_pos = m_pos + B.norm() * 0.1  # 자기장 방향으로 이동 (크기 정규화)
-#             line.append(next_pos)
-            
-#             if mag(next_pos - north_pos) > max_length:  # 최대 길이 제한
-#                 break
-        
-#         lines.append(line)
-    
-#     return lines    
-
-# def update_field_lines(curves, lines):
-#     """자기장선 업데이트"""
-#     for curve, line in zip(curves, lines):
-#         curve.clear()
-#         for point in line:
-#             curve.append(pos=point)
-
-# # 자기장선 초기화 (시뮬레이션 시작 시 호출)
-# def initialize_field_lines(north_pole, south_pole):
-#     global field_lines, curves
-#     field_lines = create_field_lines(north_pole.pos, south_pole.pos)
-#     curves = [curve(pos=line, radius=0.02, color=color.cyan) for line in field_lines]
-
-# 시뮬레이션 루프에서 호출
-# def update_magnetic_field(north_pole, south_pole):
-#     global field_lines, curves
-#     field_lines = create_field_lines(north_pole.pos, south_pole.pos)
-#     update_field_lines(curves, field_lines)
-
 def update_water_molecules(molecules, north_pole, south_pole):
     for molecule in molecules:
         field = calculate_magnetic_field(molecule.center, north_pole.pos, south_pole.pos)
-        molecule.attract_to_field(field)
+        molecule.attract_to_field(field)    
+        
+def update_ice_layer(molecules, bond_distance=1):
+    for mol in molecules:
+        maintain_hydrogen_bonds(molecules, 1)
 
-# 시뮬레이션 루프에서 호출
-def update_magnetic_field():
-    global field_lines, curves
-    field_lines = create_field_lines(north_pole.pos, south_pole.pos)
-    update_field_lines(curves, field_lines)
-    
 def update(molecule, pos=0):
     molecule.move(vector(pos, -0.05, pos))
     molecule.attract_to_field(calculate_magnetic_field(molecule.oxygen.pos))
@@ -136,7 +138,6 @@ def mouse_move():
         bar_magnet.pos += displacement
         north_pole.pos += displacement
         south_pole.pos += displacement
-        update_magnetic_field()
 
 def mouse_release():
     global drag
@@ -148,26 +149,26 @@ scene.bind('mousedown', mouse_down)
 scene.bind('mousemove', mouse_move)
 scene.bind('mouseup', mouse_release)
 
-# 곡선 형태의 자기장 선 생성
-num_lines = 12  # 그릴 자기장 선의 개수
-num_points = 50  # 각 선에 대한 점의 개수
-curves = []
-
 # 물 분자의 초기 위치 설정
-water_molecules  = [WaterMolecule(vector( 0, i * 1.0,  0)) for i in range(30)]
-water_molecules2 = [WaterMolecule(vector( 1, i * 1.0,  1)) for i in range(30)]
-water_molecules3 = [WaterMolecule(vector(-1, i * 1.0, -1)) for i in range(30)]
+water_molecules  = [WaterMolecule(vector( 0, i * 1.0,  0)) for i in range(100)]
+water_molecules2 = [WaterMolecule(vector( 1, i * 1.0,  1)) for i in range(100)]
+water_molecules3 = [WaterMolecule(vector(-1, i * 1.0, -1)) for i in range(100)]
+
+# 얼음 생성
+# distance = 1
+# ice_molecules = create_hexagonal_ice_layer(distance)
+# hydrogen_bonds = create_hydrogen_bonds(ice_molecules, distance)
 
 # 막대 자석 생성 (화면 오른쪽에 배치)
-north_pole_pos = vector(5, pos, 0)
-south_pole_pos = vector(9, pos, 0)
+north_pole_pos = vector(12, pos, 0)
+south_pole_pos = vector(16, pos, 0)
 
-# 막대자석 생성
+# 막대자석 자성 부여
 bar_magnet = cylinder(pos=north_pole_pos, axis=south_pole_pos - north_pole_pos, radius=0.2, color=color.gray(0.5))
-north_pole = sphere(pos=north_pole_pos, radius=0.3, color=color.red)  # N극
-south_pole = sphere(pos=south_pole_pos, radius=0.3, color=color.blue)  # S극
+north_pole = sphere(pos=north_pole_pos, radius=0.3, color=color.blue)  # N극
+south_pole = sphere(pos=south_pole_pos, radius=0.3, color=color.red)  # S극
 
-# 자기장선 초기화
+# 전기장선 초기화
 # initialize_field_lines(north_pole, south_pole) 
 
 # 시뮬레이션 실행
@@ -176,4 +177,5 @@ while True:
     [ update(molecule ) for molecule  in water_molecules  ]
     [ update(molecule2) for molecule2 in water_molecules2 ]
     [ update(molecule3) for molecule3 in water_molecules3 ]
-    # update_magnetic_field()
+    # [ molecule.attract_to_field(calculate_magnetic_field(molecule.oxygen.pos)) for molecule in ice_molecules ]
+    # update_ice_layer(ice_molecules)
